@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Relatório Diário da ETA</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f7fa;--card:#fff;--tx:#12263a;--mut:#5b6b7a;--pri:#0a6fb5;--bd:#d5e0e8;--warn:#b45309;--warnbg:#fef3c7;--ok:#166534}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a24;--card:#162633;--tx:#e6eef5;--mut:#9db0c0;--pri:#4aa8e8;--bd:#2a3f50;--warn:#fbbf24;--warnbg:#3a2e0a;--ok:#4ade80}}
+:root[data-theme="dark"]{--bg:#0e1a24;--card:#162633;--tx:#e6eef5;--mut:#9db0c0;--pri:#4aa8e8;--bd:#2a3f50;--warn:#fbbf24;--warnbg:#3a2e0a;--ok:#4ade80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px}
+header{background:var(--pri);color:#fff;padding:14px 16px}
+header h1{margin:0;font-size:18px}header p{margin:2px 0 0;font-size:13px;opacity:.9}
+nav{display:flex;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:env(safe-area-inset-top,0px);z-index:2}
+nav button{flex:1;padding:12px;border:0;background:none;color:var(--mut);font-size:15px;font-weight:600;border-bottom:3px solid transparent}
+nav button.on{color:var(--pri);border-color:var(--pri)}
+main{padding:12px;max-width:640px;margin:auto}
+fieldset{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin:0 0 12px;padding:10px 12px 12px}
+legend{font-weight:700;color:var(--pri);padding:0 6px;font-size:14px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;font-size:12.5px;color:var(--mut);font-weight:600}
+input,select,textarea{width:100%;margin-top:4px;padding:10px;font-size:16px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+textarea{min-height:70px;resize:vertical;font-family:inherit}
+.full{grid-column:1/-1}
+.w{font-size:12px;color:var(--warn);background:var(--warnbg);border-radius:6px;padding:3px 6px;margin-top:4px;display:none}
+.btn{width:100%;padding:14px;border:0;border-radius:10px;background:var(--pri);color:#fff;font-size:16px;font-weight:700;margin-top:4px}
+.btn.s{background:var(--card);color:var(--pri);border:1px solid var(--pri);padding:9px;font-size:14px;width:auto}
+.item{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
+.item h3{margin:0 0 4px;font-size:15px}.item p{margin:2px 0;font-size:13px;color:var(--mut)}
+.row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.msg{text-align:center;color:var(--ok);font-weight:600;min-height:22px;margin:6px 0}
+.hide{display:none}
+small.n{display:block;color:var(--mut);font-size:12px;margin:8px 0;text-align:center}
+</style>
+</head>
+<body>
+<header><h1>💧 Relatório Diário da ETA</h1><p>Preenchimento diário de operação</p></header>
+<nav><button id="t1" class="on">Novo registro</button><button id="t2">Histórico</button></nav>
+<main>
+<section id="v1"><div id="form"></div><div class="msg" id="msg"></div><button class="btn" id="save">Salvar relatório</button>
+<small class="n">Dados salvos neste aparelho. Valores de referência: Portaria GM/MS 888/2021.</small></section>
+<section id="v2" class="hide"><div id="list"></div></section>
+</main>
+<script>
+var KEY="eta_reports_v1";
+var S=[
+["Identificação",[["data","Data","date"],["turno","Turno","sel:Manhã,Tarde,Noite,Dia inteiro"],["servidor","Servidor / Operador","text","full"],["eta","ETA / Unidade","text","full"]]],
+["Produção",[["captado","Volume captado (m³)","number"],["tratado","Volume tratado (m³)","number"],["vazao","Vazão média (L/s)","number"],["horas","Horas de operação (h)","number"],["reserv","Nível reservatório (%)","number"],["lavagens","Lavagens de filtro (qtd)","number"]]],
+["Qualidade da água",[["turb_b","Turbidez bruta (NTU)","number"],["turb_t","Turbidez tratada (NTU)","number","", [0,0.5,"Turbidez tratada acima de 0,5 NTU"]],["ph_b","pH bruta","number"],["ph_t","pH tratada","number","",[6,9,"pH fora de 6,0–9,0"]],["cloro","Cloro residual livre (mg/L)","number","",[0.2,5,"Cloro fora de 0,2–5,0 mg/L"]],["cor","Cor aparente (uH)","number","",[0,15,"Cor acima de 15 uH"]],["fluor","Flúor (mg/L)","number","",[0,1.5,"Flúor acima de 1,5 mg/L"]]]],
+["Produtos químicos (kg)",[["coag","Coagulante","number"],["cl_kg","Cloro / hipoclorito","number"],["cal","Cal / soda","number"],["fl_kg","Fluossilicato / flúor","number"]]],
+["Ocorrências",[["ocorr","Ocorrências / paradas / manutenção","area","full"],["obs","Observações","area","full"]]]
+];
+var F={};
+function build(){
+ var h="";
+ S.forEach(function(s){
+  h+="<fieldset><legend>"+s[0]+"</legend><div class='g'>";
+  s[1].forEach(function(f){
+   var c=f[3]||"",id="f_"+f[0],t=f[2],inp;
+   if(t.indexOf("sel:")==0){inp="<select id='"+id+"'>"+t.slice(4).split(",").map(function(o){return"<option>"+o+"</option>"}).join("")+"</select>"}
+   else if(t=="area"){inp="<textarea id='"+id+"'></textarea>"}
+   else if(t=="number"){inp="<input id='"+id+"' type='number' inputmode='decimal' step='any'>"}
+   else{inp="<input id='"+id+"' type='"+t+"'>"}
+   h+="<div class='"+c+"'><label>"+f[1]+inp+"</label><div class='w' id='w_"+f[0]+"'></div></div>";
+  });
+  h+="</div></fieldset>";
+ });
+ document.getElementById("form").innerHTML=h;
+ S.forEach(function(s){s[1].forEach(function(f){F[f[0]]=f;
+  var el=document.getElementById("f_"+f[0]);
+  if(f[4])el.addEventListener("input",function(){chk(f)});
+ })});
+ document.getElementById("f_data").value=new Date().toISOString().slice(0,10);
+ try{var l=localStorage.getItem("eta_last");if(l){l=JSON.parse(l);document.getElementById("f_servidor").value=l.servidor||"";document.getElementById("f_eta").value=l.eta||""}}catch(e){}
+}
+function chk(f){
+ var v=document.getElementById("f_"+f[0]).value,w=document.getElementById("w_"+f[0]),r=f[4];
+ if(v!==""&&(parseFloat(v)<r[0]||parseFloat(v)>r[1])){w.textContent="⚠ "+r[2]+" (referência)";w.style.display="block"}else w.style.display="none";
+}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){return[]}}
+function store(a){try{localStorage.setItem(KEY,JSON.stringify(a))}catch(e){alert("Não foi possível salvar neste navegador.")}}
+function fd(d){var p=(d||"").split("-");return p.length==3?p[2]+"/"+p[1]+"/"+p[0]:d}
+document.getElementById("save").onclick=function(){
+ var r={},ok=true;
+ Object.keys(F).forEach(function(k){r[k]=document.getElementById("f_"+k).value});
+ if(!r.data||!r.servidor.trim()){document.getElementById("msg").style.color="var(--warn)";document.getElementById("msg").textContent="Informe a data e o nome do servidor.";return}
+ var a=load().filter(function(x){return!(x.data==r.data&&x.turno==r.turno&&x.eta==r.eta)});
+ r.salvo=new Date().toISOString();a.unshift(r);store(a);
+ try{localStorage.setItem("eta_last",JSON.stringify({servidor:r.servidor,eta:r.eta}))}catch(e){}
+ var m=document.getElementById("msg");m.style.color="var(--ok)";m.textContent="✔ Relatório salvo!";
+ Object.keys(F).forEach(function(k){if(["data","turno","servidor","eta"].indexOf(k)<0){document.getElementById("f_"+k).value="";var w=document.getElementById("w_"+k);if(w)w.style.display="none"}});
+ setTimeout(function(){m.textContent=""},3000);
+};
+function txt(r){
+ var L=function(n,k,u){return r[k]!==""&&r[k]!=null?n+": "+r[k]+(u||"")+"\n":""};
+ return "RELATÓRIO DIÁRIO DA ETA\n"+(r.eta?r.eta+"\n":"")+"Data: "+fd(r.data)+" – "+r.turno+"\nServidor: "+r.servidor+"\n\nPRODUÇÃO\n"+L("Captado","captado"," m³")+L("Tratado","tratado"," m³")+L("Vazão média","vazao"," L/s")+L("Horas de operação","horas"," h")+L("Reservatório","reserv"," %")+L("Lavagens de filtro","lavagens")+"\nQUALIDADE\n"+L("Turbidez bruta","turb_b"," NTU")+L("Turbidez tratada","turb_t"," NTU")+L("pH bruta","ph_b")+L("pH tratada","ph_t")+L("Cloro residual","cloro"," mg/L")+L("Cor aparente","cor"," uH")+L("Flúor","fluor"," mg/L")+"\nPRODUTOS (kg)\n"+L("Coagulante","coag")+L("Cloro","cl_kg")+L("Cal/soda","cal")+L("Flúor","fl_kg")+(r.ocorr?"\nOCORRÊNCIAS\n"+r.ocorr+"\n":"")+(r.obs?"\nOBS: "+r.obs+"\n":"");
+}
+function show(){
+ var a=load(),el=document.getElementById("list");
+ if(!a.length){el.innerHTML="<p style='text-align:center;color:var(--mut)'>Nenhum relatório salvo ainda.</p>";return}
+ el.innerHTML=a.map(function(r,i){return "<div class='item'><h3>"+fd(r.data)+" – "+r.turno+"</h3><p>"+(r.eta||"")+" · "+r.servidor+"</p><p>Tratado: "+(r.tratado||"–")+" m³ · Cloro: "+(r.cloro||"–")+" mg/L · Turbidez: "+(r.turb_t||"–")+" NTU</p><div class='row'><button class='btn s' data-c='"+i+"'>Copiar</button><button class='btn s' data-w='"+i+"'>WhatsApp</button><button class='btn s' data-d='"+i+"'>Excluir</button></div></div>"}).join("");
+}
+document.getElementById("list").onclick=function(e){
+ var b=e.target,a=load(),i;
+ if(b.dataset.c!=null){var t=txt(a[b.dataset.c]);
+  if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){b.textContent="Copiado ✔"},function(){alert(t)})}else alert(t)}
+ if(b.dataset.w!=null){window.open("https://wa.me/?text="+encodeURIComponent(txt(a[b.dataset.w])),"_blank")}
+ if(b.dataset.d!=null&&confirm("Excluir este relatório?")){a.splice(b.dataset.d,1);store(a);show()}
+};
+function tab(n){document.getElementById("v1").className=n==1?"":"hide";document.getElementById("v2").className=n==2?"":"hide";document.getElementById("t1").className=n==1?"on":"";document.getElementById("t2").className=n==2?"on":"";if(n==2)show()}
+document.getElementById("t1").onclick=function(){tab(1)};
+document.getElementById("t2").onclick=function(){tab(2)};
+build();
+</script>
+</body>
+</html>
